@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, LeafNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_print(self):
@@ -27,10 +27,25 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(test1, test2)
 
     def test_tohtml(self):
-        node = HTMLNode("h1", 'this is a test header', None, None)
-        test1 = node.to_html()
-        test2 = 'NotImplementedError'
-        self.assertEqual(test1, test2)
+        with self.assertRaises(NotImplementedError):
+            node = HTMLNode("h1", 'this is a test header', None, None)
+            node.to_html()
+
+
+    def test_leafnodeprint(self):
+        test_dict = {
+            "href": "https://www.google.com",
+            "target": "_blank",
+        }
+
+        leafnode = LeafNode("a", 'click me!', test_dict)
+        result = leafnode.to_html()
+        self.assertTrue(result.startswith('<a'))
+        self.assertTrue(result.endswith('</a>'))
+        self.assertIn(' href="https://www.google.com"', result)
+        self.assertIn(' target="_blank"', result)
+        self.assertIn('>click me!<', result)
+       
 
 if __name__ == "__main__":
     unittest.main()
