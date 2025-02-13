@@ -6,7 +6,6 @@ class HTMLNode:
         self.props = props
     
     def to_html(self):
-        #return 'NotImplementedError' #for testing
         raise NotImplementedError
     
     def props_to_html(self):
@@ -33,3 +32,18 @@ class LeafNode(HTMLNode):
             return self.value
         else:
             return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+        
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if not self.tag:
+            raise ValueError('missing tag')
+        if not self.children:
+            raise ValueError('missing children')
+        else:
+            tagged_children = ''
+            for child in self.children:
+                tagged_children = tagged_children + child.to_html()
+            return f"<{self.tag}>{tagged_children}</{self.tag}>"
