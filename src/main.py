@@ -4,8 +4,8 @@ from mytools import *
 
 
 def main():
-    test_node = TextNode('test test', TextType.IMAGE, 'boot.dev')
-    print(text_node_html_node(test_node))
+    test_node = TextNode('this is a *bold* test, with *two* bolds.', TextType.TEXT)
+    print(split_nodes_delimiter([test_node], '*', TextType.BOLD))
 
 
         
