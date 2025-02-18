@@ -1,5 +1,6 @@
 from textnode import *
 from htmlnode import *
+import re
 
 def text_node_html_node(text_node):
     match text_node.text_type:
@@ -33,16 +34,18 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             else:
                 intermediary_nodes = node.text.split(f'{delimiter}')
                 formatted_nodes = []
-                for i in range(count + 1):
-                    if i % 2 == 0:
-                        formatted_nodes.append(TextNode(intermediary_nodes[i], TextType.TEXT))
-                    else:
-                        formatted_nodes.append(TextNode(intermediary_nodes[i], text_type))
-                
-                # formatted_nodes = [
-                #     TextNode(intermediary_nodes[0], TextType.TEXT),
-                #     TextNode(intermediary_nodes[1], text_type),
-                #     TextNode(intermediary_nodes[2], TextType.TEXT)
-                # ]
+                toggle = TextType.TEXT
+                for slice in intermediary_nodes:
+                    formatted_nodes.append(TextNode(slice, toggle))
+                    toggle = text_type if toggle == TextType.TEXT else TextType.TEXT
                 new_nodes.extend(formatted_nodes)
     return new_nodes
+
+def extract_markdown_images(text):
+    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
+
+def extract_markdown_links(text):
+    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
+
