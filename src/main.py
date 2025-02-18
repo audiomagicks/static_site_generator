@@ -3,12 +3,12 @@ from htmlnode import *
 
 
 def main():
-    test_node = TextNode('test test', 'italic', 'boot.dev')
-    print(test_node)
+    test_node = TextNode('test test', TextType.IMAGE, 'boot.dev')
+    print(text_node_html_node(test_node))
 
 def text_node_html_node(text_node):
-    match text_node.TextType:
-        case TextType.NORMAL:
+    match text_node.text_type:
+        case TextType.TEXT:
             return LeafNode(None, text_node.text, None)
         case TextType.BOLD:
             return LeafNode('b', text_node.text, None)

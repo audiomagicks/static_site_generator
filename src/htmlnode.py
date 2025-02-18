@@ -17,7 +17,7 @@ class HTMLNode:
         return ''.join(prop_list)
     
     def __repr__(self):
-        return f"HTMLNode(html tag={self.tag}, string value={self.value}, child HTMLNode list={self.children}, dict of attributes={self.props})"
+        return f"HTMLNode(tag={self.tag}, text={self.value}, children={self.children}, props={self.props})"
     
 
 class LeafNode(HTMLNode):
