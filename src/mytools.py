@@ -171,17 +171,25 @@ def markdown_to_blocks(markdown):
     string_list = markdown.split('\n')
     new_list = []
     string_block = ''
+    in_code_block = False
+
     for string in string_list:
-        if string.strip() == '':
-            if string_block != '':
-                new_list.append(string_block)
-                string_block = ''
+        if string.strip() == '```':
+            in_code_block = not in_code_block
+            if string_block:
+                string_block += '\n'
+            string_block += string
         else:
             if string_block == '':
-                string_block = string.strip()
+                string_block = string if in_code_block else string.strip()
             else:
-                string_block += f'\n{string.strip()}'
-    if string_block != '':
+                string_block += '\n' + (string if in_code_block else string.strip())
+        
+        if string.strip() == '' and not in_code_block:
+            if string_block:
+                new_list.append(string_block)
+                string_block = ''
+    if string_block:
         new_list.append(string_block)
     return new_list
 
@@ -253,26 +261,14 @@ def block_to_htmlnode(block, block_type):
             block = block.split(' ', 1)
             children = text_to_children(block[1])
             return ParentNode(f'h{level}', children)
-        # case BlockType.CODE:
-        #     # Get all lines between the backticks, preserving whitespace
-        #     lines = block.split("\n")
-        #     # Skip first and last line (the ```)
-        #     code_content = "\n".join(lines[1:-1])
-        #     code_node = LeafNode("code", code_content)
-        #     return ParentNode("pre", children=[code_node])
         case BlockType.CODE:
+            # Get all lines between the backticks, preserving whitespace
             lines = block.split("\n")
-            # Debug - check each line's exact content
-            for i, line in enumerate(lines):
-                print(f"Line {i} raw: {repr(line)}")
-                
-            # Keep everything between first and last line
-            code_lines = lines[1:-1]
-            for i, line in enumerate(code_lines):
-                print(f"Code line {i} raw: {repr(line)}")
-            
-            code_content = "\n".join(code_lines)
-            print(f"Final content raw: {repr(code_content)}")
+            # Skip first and last line (the ```)
+            code_content = "\n".join(lines[1:-1])
+            code_node = LeafNode("code", code_content)
+            return ParentNode("pre", children=[code_node])
+
         case BlockType.QUOTE:
             block_lines = block.split('\n')
             stripped_block_lines = []
