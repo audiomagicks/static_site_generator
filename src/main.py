@@ -2,12 +2,15 @@ from textnode import *
 from htmlnode import *
 from mytools import *
 
-
 def main():
-    text = 'This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)'
-    new_nodes = text_to_textnodes(text)
-    print(new_nodes)
+    markdown = """# This is a heading
 
-        
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+    """
+    print(markdown_to_blocks(markdown))
 
 main()

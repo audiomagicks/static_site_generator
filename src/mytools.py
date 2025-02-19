@@ -151,3 +151,22 @@ def text_to_textnodes(text):
     image_nodes = split_nodes_image(code_nodes)
     final_nodes = split_nodes_link(image_nodes)
     return final_nodes
+
+def markdown_to_blocks(markdown):
+    string_list = markdown.split('\n')
+    new_list = []
+    string_block = ''
+    for string in string_list:
+        if string.strip() == '':
+            if string_block != '':
+                new_list.append(string_block)
+                string_block = ''
+        else:
+            if string_block == '':
+                string_block = string.strip()
+            else:
+                string_block += f'\n{string.strip()}'
+    if string_block != '':
+        new_list.append(string_block)
+    return new_list
+
