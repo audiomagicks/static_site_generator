@@ -49,3 +49,96 @@ def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
 
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        original_text = node.text
+        open_parenthasis = 0
+        closed_parenthasis = 0
+        open_bracket = 0
+        closed_bracket = 0
+        for c in original_text:
+            match c:
+                case '(':
+                    open_parenthasis += 1
+                case ')':
+                    closed_parenthasis += 1
+                case '[':
+                    open_bracket += 1
+                case ']':
+                    closed_bracket += 1
+                case _:
+                    pass         
+        if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
+            raise Exception('missing closing parenthasis or bracket, check markdown syntax')
+        elif open_parenthasis == 0:
+            return original_text
+        else:
+            extracted_images = extract_markdown_images(original_text)
+            formatted_nodes = []
+            for image in extracted_images:
+                count = 1
+                image_alt = image[0]
+                image_link = image[1]
+                sections = original_text.split(f"![{image_alt}]({image_link})", 1)
+                before_image = sections[0]
+                after_image = sections[1]
+                if count == len(extracted_images):
+                    formatted_nodes.append(TextNode(before_image, TextType.TEXT))
+                    formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                    formatted_nodes.append(TextNode(after_image, TextType.TEXT))
+                else:
+                    count += 1
+                    formatted_nodes.append(TextNode(before_image, TextType.TEXT))
+                    formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                    original_text = after_image
+
+            new_nodes.extend(formatted_nodes)
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        original_text = node.text
+        open_parenthasis = 0
+        closed_parenthasis = 0
+        open_bracket = 0
+        closed_bracket = 0
+        for c in original_text:
+            match c:
+                case '(':
+                    open_parenthasis += 1
+                case ')':
+                    closed_parenthasis += 1
+                case '[':
+                    open_bracket += 1
+                case ']':
+                    closed_bracket += 1
+                case _:
+                    pass         
+        if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
+            raise Exception('missing closing parenthasis or bracket, check markdown syntax')
+        elif open_parenthasis == 0:
+            return original_text
+        else:
+            extracted_links = extract_markdown_links(original_text)
+            formatted_nodes = []
+            for image in extracted_links:
+                count = 1
+                link_alt = image[0]
+                link_link = image[1]
+                sections = original_text.split(f"[{link_alt}]({link_link})", 1)
+                before_link = sections[0]
+                after_link = sections[1]
+                if count == len(extracted_links):
+                    formatted_nodes.append(TextNode(before_link, TextType.TEXT))
+                    formatted_nodes.append(TextNode(link_alt, TextType.LINK, link_link))
+                    formatted_nodes.append(TextNode(after_link, TextType.TEXT))
+                else:
+                    count += 1
+                    formatted_nodes.append(TextNode(before_link, TextType.TEXT))
+                    formatted_nodes.append(TextNode(link_alt, TextType.LINK, link_link))
+                    original_text = after_link
+
+            new_nodes.extend(formatted_nodes)
+    return new_nodes
