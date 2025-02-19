@@ -19,12 +19,6 @@ class TestTextNode(unittest.TestCase):
         node2 = TextNode("This is a text node", TextType.ITALIC)
         self.assertNotEqual(node, node2)
 
-    def test_print(self):
-        node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.BOLD)
-        text_node = print(node)
-        text_node2 = print(node2)
-        self.assertEqual(text_node, text_node2)
 
 
 if __name__ == "__main__":

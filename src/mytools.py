@@ -188,7 +188,7 @@ def block_to_block_type(markdown_block):
             return BlockType.HEADING
         else:
             return BlockType.PARAGRAPH
-    elif markdown_block[0] == '```':   
+    elif markdown_block.startswith('```'):   
         if len(markdown_block_lines) >= 2 and markdown_block_lines[0] == '```' and markdown_block_lines[-1] == '```':
             return BlockType.CODE
         return BlockType.PARAGRAPH
