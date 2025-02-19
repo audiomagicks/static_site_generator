@@ -3,19 +3,22 @@ from htmlnode import *
 from mytools import *
 
 def main():
-    markdown = """# This is a heading
+    # Using explicit spaces in the markdown string
+    markdown2 = (
+        "```\n"
+        "def hello():\n"
+        "    print('hello')\n"  # Make sure there are 4 actual spaces here
+        "```"
+    )
+    print("Raw markdown:", repr(markdown2))
+    node2 = markdown_to_html_node(markdown2)
+    expected = "<div><pre><code>def hello():\n    print('hello')</code></pre></div>"
+    result = node2.to_html() == expected
+    print("Result matches:", result)
+    print("Expected:", expected)
+    print("Got:", node2.to_html())
+    
 
-This is a paragraph of text. It has some **bold** and *italic* words inside of it.
-
-* This is the first list item in a list block
-* This is a list item
-* This is another list item
-    """
-    block_list = markdown_to_blocks(markdown)
-    print(block_list)
-    print(f'block 1 = {block_to_block_type(block_list[0])}')
-    print(f'block 2 = {block_to_block_type(block_list[1])}')
-    print(f'block 3 = {block_to_block_type(block_list[2])}')
 
 
 main()

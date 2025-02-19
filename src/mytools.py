@@ -25,6 +25,8 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     for node in old_nodes:
         if node.text_type != TextType.TEXT or delimiter not in node.text:
             new_nodes.append(node)
+        elif text_type == TextType.ITALIC and node.text.startswith('* '):
+            new_nodes.append(node)
         else:
             count = 0
             for c in node.text:
@@ -53,48 +55,55 @@ def extract_markdown_links(text):
 def split_nodes_image(old_nodes):
     new_nodes = []
     for node in old_nodes:
-        original_text = node.text
-        open_parenthasis = 0
-        closed_parenthasis = 0
-        open_bracket = 0
-        closed_bracket = 0
-        for c in original_text:
-            match c:
-                case '(':
-                    open_parenthasis += 1
-                case ')':
-                    closed_parenthasis += 1
-                case '[':
-                    open_bracket += 1
-                case ']':
-                    closed_bracket += 1
-                case _:
-                    pass         
-        if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
-            raise Exception('missing closing parenthasis or bracket, check markdown syntax')
-        elif open_parenthasis == 0:
-            new_nodes.append(node)
-        else:
-            extracted_images = extract_markdown_images(original_text)
-            formatted_nodes = []
-            for image in extracted_images:
+        if "![" in node.text:
+            original_text = node.text
+            open_parenthasis = 0
+            closed_parenthasis = 0
+            open_bracket = 0
+            closed_bracket = 0
+            for c in original_text:
+                match c:
+                    case '(':
+                        open_parenthasis += 1
+                    case ')':
+                        closed_parenthasis += 1
+                    case '[':
+                        open_bracket += 1
+                    case ']':
+                        closed_bracket += 1
+                    case _:
+                        pass         
+            if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
+                raise Exception('missing closing parenthasis or bracket, check markdown syntax')
+            elif open_parenthasis == 0:
+                new_nodes.append(node)
+            else:
+                extracted_images = extract_markdown_images(original_text)
+                formatted_nodes = []
                 count = 1
-                image_alt = image[0]
-                image_link = image[1]
-                sections = original_text.split(f"![{image_alt}]({image_link})", 1)
-                before_image = sections[0]
-                after_image = sections[1]
-                if count == len(extracted_images):
-                    formatted_nodes.append(TextNode(before_image, TextType.TEXT))
-                    formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
-                    formatted_nodes.append(TextNode(after_image, TextType.TEXT))
-                else:
-                    count += 1
-                    formatted_nodes.append(TextNode(before_image, TextType.TEXT))
-                    formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
-                    original_text = after_image
+                for image in extracted_images:
+                    image_alt = image[0]
+                    image_link = image[1]
+                    sections = original_text.split(f"![{image_alt}]({image_link})", 1)
+                    before_image = sections[0]
+                    after_image = sections[1]
+                    if count == len(extracted_images):
+                        if before_image.strip():
+                            formatted_nodes.append(TextNode(before_image, TextType.TEXT))
+                        formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                        if before_image.strip():
+                            formatted_nodes.append(TextNode(after_image, TextType.TEXT))
+                    else:
+                        count += 1
+                        if before_image.strip():
+                            formatted_nodes.append(TextNode(before_image, TextType.TEXT))
+                        formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                        original_text = after_image
 
-            new_nodes.extend(formatted_nodes)
+                new_nodes.extend(formatted_nodes)
+        else:
+            new_nodes.append(node)
+    
     return new_nodes
 
 def split_nodes_link(old_nodes):
@@ -132,12 +141,15 @@ def split_nodes_link(old_nodes):
                 before_link = sections[0]
                 after_link = sections[1]
                 if count == len(extracted_links):
-                    formatted_nodes.append(TextNode(before_link, TextType.TEXT))
+                    if before_link.strip():
+                        formatted_nodes.append(TextNode(before_link, TextType.TEXT))
                     formatted_nodes.append(TextNode(link_alt, TextType.LINK, link_link))
-                    formatted_nodes.append(TextNode(after_link, TextType.TEXT))
+                    if after_link.strip():
+                        formatted_nodes.append(TextNode(after_link, TextType.TEXT))
                 else:
                     count += 1
-                    formatted_nodes.append(TextNode(before_link, TextType.TEXT))
+                    if before_link.strip():
+                        formatted_nodes.append(TextNode(before_link, TextType.TEXT))
                     formatted_nodes.append(TextNode(link_alt, TextType.LINK, link_link))
                     original_text = after_link
 
@@ -152,6 +164,8 @@ def text_to_textnodes(text):
     image_nodes = split_nodes_image(code_nodes)
     final_nodes = split_nodes_link(image_nodes)
     return final_nodes
+
+
 
 def markdown_to_blocks(markdown):
     string_list = markdown.split('\n')
@@ -212,3 +226,76 @@ def block_to_block_type(markdown_block):
         return BlockType.ORDERED_LIST  
     else:
         return BlockType.PARAGRAPH
+    
+def markdown_to_html_node(markdown):
+    markdown_blocks = markdown_to_blocks(markdown)
+    html_nodes = []
+    for block in markdown_blocks:
+        block_type = block_to_block_type(block)
+        parent_node = block_to_htmlnode(block, block_type)
+        html_nodes.append(parent_node)
+    return ParentNode('div', html_nodes, None)
+
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    final_nodes = []
+    for text_node in text_nodes:
+        final_nodes.append(text_node_html_node(text_node))
+    return final_nodes
+
+def block_to_htmlnode(block, block_type):
+    match block_type:
+        case BlockType.PARAGRAPH:
+            children = text_to_children(block)
+            return ParentNode('p', children)
+        case BlockType.HEADING:
+            level = block.index(' ')
+            block = block.split(' ', 1)
+            children = text_to_children(block[1])
+            return ParentNode(f'h{level}', children)
+        # case BlockType.CODE:
+        #     # Get all lines between the backticks, preserving whitespace
+        #     lines = block.split("\n")
+        #     # Skip first and last line (the ```)
+        #     code_content = "\n".join(lines[1:-1])
+        #     code_node = LeafNode("code", code_content)
+        #     return ParentNode("pre", children=[code_node])
+        case BlockType.CODE:
+            lines = block.split("\n")
+            # Debug - check each line's exact content
+            for i, line in enumerate(lines):
+                print(f"Line {i} raw: {repr(line)}")
+                
+            # Keep everything between first and last line
+            code_lines = lines[1:-1]
+            for i, line in enumerate(code_lines):
+                print(f"Code line {i} raw: {repr(line)}")
+            
+            code_content = "\n".join(code_lines)
+            print(f"Final content raw: {repr(code_content)}")
+        case BlockType.QUOTE:
+            block_lines = block.split('\n')
+            stripped_block_lines = []
+            for line in block_lines:
+                stripped_block_lines.append(line[1:])
+            children = text_to_children('\n'.join(stripped_block_lines))
+            return ParentNode('blockquote', children)
+        case BlockType.UNORDERED_LIST:
+            children = list_item_tagger(block)
+            return ParentNode('ul', children)
+        case BlockType.ORDERED_LIST:
+            children = list_item_tagger(block)
+            return ParentNode('ol', children)
+        case _:
+            raise Exception('Invalid BlockType')
+        
+def list_item_tagger(block):
+    block_lines = block.split('\n')
+    stripped_block_lines = []
+    final_nodes = []
+    for line in block_lines:
+        lines = line.split(' ', 1)
+        stripped_block_lines.append(lines[1].strip())
+    for line in stripped_block_lines:
+        final_nodes.append(ParentNode('li', text_to_children(line)))
+    return final_nodes
