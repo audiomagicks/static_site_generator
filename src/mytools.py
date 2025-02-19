@@ -210,8 +210,8 @@ def block_to_block_type(markdown_block):
             return BlockType.HEADING
         else:
             return BlockType.PARAGRAPH
-    elif markdown_block.startswith('```'):   
-        if len(markdown_block_lines) >= 2 and markdown_block_lines[0] == '```' and markdown_block_lines[-1] == '```':
+    elif markdown_block.startswith('```'):  
+        if len(markdown_block_lines) >= 2 and markdown_block_lines[0].startswith('```') and markdown_block_lines[-1] == '```':
             return BlockType.CODE
         return BlockType.PARAGRAPH
     elif markdown_block[0] == '>': 
@@ -260,15 +260,19 @@ def block_to_htmlnode(block, block_type):
             level = block.index(' ')
             block = block.split(' ', 1)
             children = text_to_children(block[1])
-            return ParentNode(f'h{level}', children)
+            return ParentNode(f'h{level}', children,)
         case BlockType.CODE:
             # Get all lines between the backticks, preserving whitespace
             lines = block.split("\n")
             # Skip first and last line (the ```)
-            code_content = "\n".join(lines[1:-1])
+            first_content_line = lines[1]
+            if first_content_line.startswith("```"):
+                # Skip the language specification line
+                code_content = "\n".join(lines[2:-1])
+            else:
+                code_content = "\n".join(lines[1:-1])
             code_node = LeafNode("code", code_content)
-            return ParentNode("pre", children=[code_node])
-
+            return ParentNode("pre", children=[code_node], props=None)
         case BlockType.QUOTE:
             block_lines = block.split('\n')
             stripped_block_lines = []
