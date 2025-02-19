@@ -1,6 +1,7 @@
 from textnode import *
 from htmlnode import *
 import re
+from enum import Enum
 
 def text_node_html_node(text_node):
     match text_node.text_type:
@@ -170,3 +171,44 @@ def markdown_to_blocks(markdown):
         new_list.append(string_block)
     return new_list
 
+class BlockType(Enum):
+    PARAGRAPH = 'paragraph'
+    HEADING = 'heading'
+    CODE = 'code'
+    QUOTE = 'quote'
+    UNORDERED_LIST = 'unordered_list'
+    ORDERED_LIST = 'ordered_list'
+
+def block_to_block_type(markdown_block):
+    markdown_block_lines = markdown_block.split('\n')
+    if not markdown_block.strip(): 
+        return BlockType.PARAGRAPH
+    elif markdown_block_lines[0].startswith('#'):
+        if ' ' in markdown_block_lines[0] and 1 <= markdown_block_lines[0].count('#', 0, markdown_block_lines[0].index(' ')) <= 6:
+            return BlockType.HEADING
+        else:
+            return BlockType.PARAGRAPH
+    elif markdown_block[0] == '```':   
+        if len(markdown_block_lines) >= 2 and markdown_block_lines[0] == '```' and markdown_block_lines[-1] == '```':
+            return BlockType.CODE
+        return BlockType.PARAGRAPH
+    elif markdown_block[0] == '>': 
+        for line in markdown_block_lines:
+            if not line.strip().startswith('>'):
+                return BlockType.PARAGRAPH
+        return BlockType.QUOTE  
+    elif markdown_block[0] == '*' or markdown_block[0] == '-': 
+        symbol = markdown_block[0]
+        for line in markdown_block_lines:
+            if not line.strip().startswith(symbol + ' '):
+                return BlockType.PARAGRAPH
+        return BlockType.UNORDERED_LIST  
+    elif markdown_block[0:3] == '1. ': 
+        count = 1
+        for line in markdown_block_lines:
+            if not line.startswith(f'{count}. '):
+                return BlockType.PARAGRAPH
+            count += 1
+        return BlockType.ORDERED_LIST  
+    else:
+        return BlockType.PARAGRAPH
