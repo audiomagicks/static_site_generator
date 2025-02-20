@@ -172,6 +172,7 @@ def markdown_to_blocks(markdown):
     new_list = []
     string_block = ''
     in_code_block = False
+    list_block = None
 
     for string in string_list:
         if string.strip() == '```':
