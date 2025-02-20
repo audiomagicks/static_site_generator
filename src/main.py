@@ -69,24 +69,28 @@ def copy_dir(src_path, dst_path, src_dir_list):
 
     copy_dir(src_path, dst_path, src_dir_list[1:])
 
-def extract_title(markdown_file):
-    first_line = markdown_file.readline()
-    if first_line.startswith('# '):
-        return first_line[2:]
+def extract_title(markdown):
+    first_line = markdown.split('\n')
+    if first_line[0].startswith('# '):
+        return first_line[0][2:]
     raise Exception('h1 header not present on first line')
 
 def generate_page(from_path, dest_path, template_path):
     print(f'generating page from {from_path} to {dest_path} using {template_path}\n')
     with open(from_path) as f:
-        title = extract_title(f)
         md_content = f.read()
     with open(template_path) as f:
         template = f.read()
-    # print(f'Title Extracted: {title}')
-    # print(f'Content Extracted: {md_content}')
-    # print(f'Template Extracted: {template}')
-    html_content = markdown_to_html_node(md_content)
-    print(html_content)
+    html_node_content = markdown_to_html_node(md_content)
+    html_content = html_node_content.to_html()
+    title = extract_title(md_content)
+    titled_template = template.replace('{{ Title }}', title)
+    final_content = titled_template.replace('{{ Content }}', html_content)
+    with open('public/index.html', 'w')as file:
+        file.write(final_content)
+
+
+
 
 
 main()

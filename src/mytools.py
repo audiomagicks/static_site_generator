@@ -167,31 +167,132 @@ def text_to_textnodes(text):
 
 
 
+# def markdown_to_blocks(markdown):
+#     string_list = markdown.split('\n')
+#     new_list = []
+#     string_block = ''
+#     in_code_block = False
+#     list_block = None
+
+#     for string in string_list:
+#         if string.strip() == '```':
+#             in_code_block = not in_code_block
+#             if string_block:
+#                 string_block += '\n'
+#             string_block += string
+#         else:
+#             if string_block == '':
+#                 string_block = string if in_code_block else string.strip()
+#             else:
+#                 string_block += '\n' + (string if in_code_block else string.strip())
+        
+#         if string.strip() == '' and not in_code_block:
+#             if string_block:
+#                 new_list.append(string_block)
+#                 string_block = ''
+#     if string_block:
+#         new_list.append(string_block)
+#     return new_list
+
+# def markdown_to_blocks(markdown):
+#     string_list = markdown.split('\n')  # Split text into lines
+#     new_list = []
+#     string_block = ''
+#     in_code_block = False
+#     list_block = None  # Accumulate list items together
+
+#     for string in string_list:
+#         if string.strip() == '```':  # Detect code block start/end
+#             if in_code_block:  # Closing a code block
+#                 if string_block:
+#                     string_block += '\n' + string.strip()  # Add the closing ```
+#                     new_list.append(string_block)  # Save the entire code block
+#                     string_block = ''
+#             else:  # Opening a code block
+#                 if string_block:
+#                     new_list.append(string_block)  # Save any accumulated non-code block
+#                     string_block = ''
+#                 string_block = string.strip()  # Start the code block
+#             in_code_block = not in_code_block
+#         elif in_code_block:  # Inside a code block, preserve line structure
+#             string_block += '\n' + string
+#         elif re.match(r'^\s*([*\-]\s|(\d+\.)\s)', string):  # Detect list items
+#             # Handle list accumulation
+#             if list_block is None:
+#                 list_block = string.strip()
+#             else:
+#                 list_block += '\n' + string.strip()
+#         else:  # Handle regular blocks
+#             # Finalize the list block if leaving a list
+#             if list_block:
+#                 new_list.append(list_block)
+#                 list_block = None
+#             if string.strip():  # Add non-empty string as part of a block
+#                 if string_block:
+#                     string_block += '\n' + string.strip()
+#                 else:
+#                     string_block = string.strip()
+#             else:  # Empty line marks the end of a block
+#                 if string_block:
+#                     new_list.append(string_block)
+#                     string_block = ''
+
+#     # Add remaining blocks
+#     if string_block:
+#         new_list.append(string_block)
+#     if list_block:
+#         new_list.append(list_block)
+
+#     return new_list
+
 def markdown_to_blocks(markdown):
-    string_list = markdown.split('\n')
-    new_list = []
-    string_block = ''
-    in_code_block = False
-    list_block = None
+    string_list = markdown.split('\n')  # Split text into lines
+    new_list = []  
+    string_block = ''  
+    in_code_block = False  
+    list_block = None  # Accumulate list items together
 
     for string in string_list:
-        if string.strip() == '```':
-            in_code_block = not in_code_block
-            if string_block:
-                string_block += '\n'
-            string_block += string
-        else:
-            if string_block == '':
-                string_block = string if in_code_block else string.strip()
+        if re.match(r'^\s*```', string):  # Detect code block delimiter with or without language spec
+            if in_code_block:  # Closing a code block
+                if string_block:
+                    string_block += '\n' + '```'  # Add the closing code block delimiter to the block
+                    new_list.append(string_block)  # Save the entire code block
+                    string_block = ''
+            else:  # Opening a code block
+                if string_block:
+                    new_list.append(string_block)  # Save any previous non-code block
+                string_block = '```'  # Start the new code block
+            in_code_block = not in_code_block  # Toggle the in_code_block state
+        elif in_code_block:  # Handle lines inside a code block
+            string_block += '\n' + string
+        elif re.match(r'^\s*([*\-]\s|(\d+\.)\s)', string):  # Detect list items
+            # Handle list accumulation
+            if list_block is None:
+                list_block = string.strip()
             else:
-                string_block += '\n' + (string if in_code_block else string.strip())
-        
-        if string.strip() == '' and not in_code_block:
-            if string_block:
-                new_list.append(string_block)
-                string_block = ''
+                list_block += '\n' + string.strip()
+        else:  # Regular blocks
+            # Finalize and save list blocks if leaving a list
+            if list_block:
+                new_list.append(list_block)
+                list_block = None
+            if string.strip():  # Handle non-empty lines
+                if string_block:
+                    string_block += '\n' + string.strip()
+                else:
+                    string_block = string.strip()
+            else:  # Empty lines mark the end of a block
+                if string_block:
+                    new_list.append(string_block)
+                    string_block = ''
+
+    # Add remaining blocks if not yet added
     if string_block:
         new_list.append(string_block)
+    if list_block:
+        new_list.append(list_block)
+
     return new_list
 
 class BlockType(Enum):
