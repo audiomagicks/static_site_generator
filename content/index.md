@@ -11,7 +11,7 @@
 * Disney *didn't ruin it*
 * It created an entirely new genre of fantasy
 
-## My favorite characters (in order)
+## My favorite characters in order
 
 1. Gandalf
 2. Bilbo
@@ -23,7 +23,7 @@
 8. Sauron
 9. Aragorn
 
-Here's what `elflang` looks like (the perfect coding language):
+Here's what `elflang` looks like *the perfect coding language*:
 
 ```
 func main(){

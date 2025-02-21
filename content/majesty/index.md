@@ -18,7 +18,7 @@ This series, a cornerstone of what I, in my many years as an **Archmage**, have 
 
 One cannot simply discuss *The Lord of the Rings* without acknowledging the bedrock upon which it stands: **The Silmarillion**. This compendium of mythopoeic tales sets the stage for Middle-earth's history, from the creation myth of Eä to the epic sagas of the Elder Days. It is a testament to Tolkien's unparalleled skill as a linguist and myth-maker, crafting:
 
-1. An elaborate pantheon of deities (the `Valar` and `Maiar`)
+1. An elaborate pantheon of deities the `Valar` and `Maiar`
 2. The tragic saga of the Noldor Elves
 3. The rise and fall of great kingdoms such as Gondolin and Númenor
 
@@ -45,7 +45,7 @@ Tolkien's Middle-earth is a realm of breathtaking diversity and realism, brought
 
 At its heart, *The Lord of the Rings* is a timeless narrative of the perennial struggle between light and darkness, a theme that resonates deeply with the human experience. The saga explores:
 
-- The resilience of the human (and hobbit) spirit in the face of overwhelming odds
+- The resilience of the human and hobbit spirit in the face of overwhelming odds
 - The corrupting influence of power, epitomized by the One Ring
 - The importance of friendship, loyalty, and sacrifice
 
