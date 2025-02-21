@@ -73,9 +73,9 @@ def split_nodes_image(old_nodes):
                         closed_bracket += 1
                     case _:
                         pass         
-            if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
-                raise Exception('missing closing parenthasis or bracket, check markdown syntax')
-            elif open_parenthasis == 0:
+            # if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
+            #     raise Exception('missing closing parenthasis or bracket, check markdown syntax')
+            if open_parenthasis == 0:
                 new_nodes.append(node)
             else:
                 extracted_images = extract_markdown_images(original_text)
@@ -100,7 +100,7 @@ def split_nodes_image(old_nodes):
                         formatted_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
                         original_text = after_image
 
-                new_nodes.extend(formatted_nodes)
+            new_nodes.extend(formatted_nodes)
         else:
             new_nodes.append(node)
     
@@ -126,9 +126,9 @@ def split_nodes_link(old_nodes):
                     closed_bracket += 1
                 case _:
                     pass         
-        if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
-            raise Exception('missing closing parenthasis or bracket, check markdown syntax')
-        elif open_parenthasis == 0:
+        # if open_parenthasis != closed_parenthasis or open_bracket != closed_bracket:
+        #     raise Exception('missing closing parenthasis or bracket, check markdown syntax')
+        if open_parenthasis == 0:
             new_nodes.append(node)
         else:
             extracted_links = extract_markdown_links(original_text)
@@ -163,87 +163,9 @@ def text_to_textnodes(text):
     code_nodes = split_nodes_delimiter(italic_nodes, '`', TextType.CODE)
     image_nodes = split_nodes_image(code_nodes)
     final_nodes = split_nodes_link(image_nodes)
+    print(f'text to textnodes output: {final_nodes}')
     return final_nodes
 
-
-
-# def markdown_to_blocks(markdown):
-#     string_list = markdown.split('\n')
-#     new_list = []
-#     string_block = ''
-#     in_code_block = False
-#     list_block = None
-
-#     for string in string_list:
-#         if string.strip() == '```':
-#             in_code_block = not in_code_block
-#             if string_block:
-#                 string_block += '\n'
-#             string_block += string
-#         else:
-#             if string_block == '':
-#                 string_block = string if in_code_block else string.strip()
-#             else:
-#                 string_block += '\n' + (string if in_code_block else string.strip())
-        
-#         if string.strip() == '' and not in_code_block:
-#             if string_block:
-#                 new_list.append(string_block)
-#                 string_block = ''
-#     if string_block:
-#         new_list.append(string_block)
-#     return new_list
-
-# def markdown_to_blocks(markdown):
-#     string_list = markdown.split('\n')  # Split text into lines
-#     new_list = []
-#     string_block = ''
-#     in_code_block = False
-#     list_block = None  # Accumulate list items together
-
-#     for string in string_list:
-#         if string.strip() == '```':  # Detect code block start/end
-#             if in_code_block:  # Closing a code block
-#                 if string_block:
-#                     string_block += '\n' + string.strip()  # Add the closing ```
-#                     new_list.append(string_block)  # Save the entire code block
-#                     string_block = ''
-#             else:  # Opening a code block
-#                 if string_block:
-#                     new_list.append(string_block)  # Save any accumulated non-code block
-#                     string_block = ''
-#                 string_block = string.strip()  # Start the code block
-#             in_code_block = not in_code_block
-#         elif in_code_block:  # Inside a code block, preserve line structure
-#             string_block += '\n' + string
-#         elif re.match(r'^\s*([*\-]\s|(\d+\.)\s)', string):  # Detect list items
-#             # Handle list accumulation
-#             if list_block is None:
-#                 list_block = string.strip()
-#             else:
-#                 list_block += '\n' + string.strip()
-#         else:  # Handle regular blocks
-#             # Finalize the list block if leaving a list
-#             if list_block:
-#                 new_list.append(list_block)
-#                 list_block = None
-#             if string.strip():  # Add non-empty string as part of a block
-#                 if string_block:
-#                     string_block += '\n' + string.strip()
-#                 else:
-#                     string_block = string.strip()
-#             else:  # Empty line marks the end of a block
-#                 if string_block:
-#                     new_list.append(string_block)
-#                     string_block = ''
-
-#     # Add remaining blocks
-#     if string_block:
-#         new_list.append(string_block)
-#     if list_block:
-#         new_list.append(list_block)
-
-#     return new_list
 
 def markdown_to_blocks(markdown):
     string_list = markdown.split('\n')  # Split text into lines
@@ -339,9 +261,13 @@ def block_to_block_type(markdown_block):
     
 def markdown_to_html_node(markdown):
     markdown_blocks = markdown_to_blocks(markdown)
+    print("Markdown blocks:")
+    for block in markdown_blocks:
+        print(f"Block: {block[:50]}...")  # Print first 50 chars of each block
     html_nodes = []
     for block in markdown_blocks:
         block_type = block_to_block_type(block)
+        print(f"Block type: {block_type}")
         parent_node = block_to_htmlnode(block, block_type)
         html_nodes.append(parent_node)
     return ParentNode('div', html_nodes, None)
